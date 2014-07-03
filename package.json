@@ -1,0 +1,26 @@
+{
+  "name": "wifi-cc3000",
+  "version": "0.0.0",
+  "description": "cc3000 driver for Tessel",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/tessel/wifi-cc3000.git"
+  },
+  "keywords": [
+    "tessel",
+    "cc3000"
+  ],
+  "author": {
+    "name": "Technical Machine",
+    "email": "team@technical.io"
+  },
+  "license": "MIT/Apache 2.0",
+  "bugs": {
+    "url": "https://github.com/tessel/wifi-cc3000/issues"
+  },
+  "homepage": "https://github.com/tessel/wifi-cc3000"
+}
