@@ -1,7 +1,6 @@
 var util = require('util');
 var EventEmitter = require('events').EventEmitter;
 
-var tm = process.binding('tm');
 var hw = process.binding('hw');
 
 
@@ -39,32 +38,53 @@ function Wifi(){
 
     self._connectOpts = options;
 
+    process.once('wifi_connect_complete', function(err, data){
+      console.log("wifi_connect_complete hit");
+      if (!err) {
+        callback(err, JSON.parse(data));
+      } else {
+        callback(err, data);
+      }
+    });
+
     // initiate connection
+    var ret = hw.wifi_connect(options.ssid.length, options.password.length, 
+      options.security.length, options.ssid, options.password, options.security);
+
+    if (ret < 0) {
+      process.removeListener('wifi_connect_complete', callback);
+
+      if (callback) {
+        callback(new Error("Previous wifi connect is in the middle of a call"));
+      } else {
+        new Error("Previous wifi connect is in the middle of a call");
+      }
+    }
 
     return self;
   }
 
   self.isConnected = function() {
-    return hw.cc_is_connected();
+    return hw.wifi_is_connected();
   }
 
   self.connection = function() {
-    return hw.cc_connection();
+    return hw.wiif_connection();
   }
 
   self.reset = function(callback) {
-    hw.cc_reset();
+    hw.wifi_reset();
     // something something set up the callback here
     return self;
   }
 
   self.disable = function(callback) {
-    hw.cc_disable();
+    hw.wifi_disable();
     return self;
   }
 
   self.enable = function(callback) {
-    hw.cc_enable();
+    hw.wifi_enable();
     return self;
   }
 }
