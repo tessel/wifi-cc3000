@@ -48,8 +48,7 @@ function Wifi(){
     });
 
     // initiate connection
-    var ret = hw.wifi_connect(options.ssid.length, options.password.length, 
-      options.security.length, options.ssid, options.password, options.security);
+    var ret = hw.wifi_connect(options.ssid, options.password, options.security);
 
     if (ret < 0) {
       process.removeListener('wifi_connect_complete', callback);
@@ -69,21 +68,22 @@ function Wifi(){
   }
 
   self.connection = function() {
-    return hw.wiif_connection();
+    return JSON.parse(hw.wifi_connection());
   }
 
-  self.reset = function(callback) {
-    hw.wifi_reset();
-    // something something set up the callback here
+  self.reset = function() {
+    // disable and then enable
+    self.disable();
+    self.enable();
     return self;
   }
 
-  self.disable = function(callback) {
+  self.disable = function() {
     hw.wifi_disable();
     return self;
   }
 
-  self.enable = function(callback) {
+  self.enable = function() {
     hw.wifi_enable();
     return self;
   }
