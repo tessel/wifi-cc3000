@@ -38,15 +38,25 @@ function Wifi(){
 
     self._connectOpts = options;
 
-    process.once('wifi_connect_complete', function(err, data){
-      console.log("wifi_connect_complete hit");
+    if (callback) {
+      process.once('wifi_connect_complete', function(err, data){
+        console.log("wifi_connect_complete hit");
+        if (!err) {
+          callback(err, JSON.parse(data));
+        } else {
+          callback(err, data);
+        }
+      });
+    }
+    
+    process.on('wifi_connect_complete', function(err, data){
       if (!err) {
-        callback(err, JSON.parse(data));
+        self.emit('connect', err, JSON.parse(data))
       } else {
-        callback(err, data);
+        self.emit('disconnect', err, data)
       }
-    });
-
+    })
+    
     // initiate connection
     var ret = hw.wifi_connect(options.ssid, options.password, options.security);
 
@@ -67,8 +77,16 @@ function Wifi(){
     return hw.wifi_is_connected();
   }
 
+  self.isBusy = function(){
+    return hw.wifi_is_busy();
+  }
+
   self.connection = function() {
-    return JSON.parse(hw.wifi_connection());
+    var data = JSON.parse(hw.wifi_connection());
+    if (data.connected) {
+      return data;
+    }
+    return null;
   }
 
   self.reset = function() {
