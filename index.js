@@ -3,10 +3,6 @@ var EventEmitter = require('events').EventEmitter;
 
 var hw = process.binding('hw');
 
-
-function bufferConvert() {
-}
-
 function Wifi(){
   var self = this;
 
@@ -22,11 +18,9 @@ function Wifi(){
     // { ssid: 
     //   , password: optional only if security == "unsecured"
     //   , security: defaults to wpa2 
-    //   , timeout: defaults to 60s
     // }
 
     options.security = (options.security && options.security.toLowerCase()) || "wpa2";
-    options.timeout = Number.parseInt(options.timeout) || 60;
 
     if (!options || !options.ssid) {
       throw Error("No SSID given");
@@ -40,7 +34,6 @@ function Wifi(){
 
     if (callback) {
       process.once('wifi_connect_complete', function(err, data){
-        console.log("wifi_connect_complete hit");
         if (!err) {
           callback(err, JSON.parse(data));
         } else {
@@ -63,10 +56,11 @@ function Wifi(){
     if (ret < 0) {
       process.removeListener('wifi_connect_complete', callback);
 
+      var errMsg = "Previous wifi connect is in the middle of a call";
       if (callback) {
-        callback(new Error("Previous wifi connect is in the middle of a call"));
+        callback(new Error(errMsg));
       } else {
-        new Error("Previous wifi connect is in the middle of a call");
+        new Error(errMsg);
       }
     }
 
@@ -94,6 +88,38 @@ function Wifi(){
     self.disable();
     self.enable();
     return self;
+  }
+
+  self.disconnect = function(callback){
+    if (self.isConnected()){
+
+      process.once('wifi_disconnect_complete', function(err, data){
+        self.emit('disconnect', err, data);
+
+        callback && callback();
+      });
+
+      // disconnect
+      var ret = hw.wifi_disconnect();
+
+      if (ret < 0) {
+        process.removeListener('wifi_disconnect_complete', callback);
+
+        var errMsg = "Could not disconnect properly, wifi is currently busy.";
+        if (callback) {
+          callback(new Error(errMsg));
+        } else {
+          new Error(errMsg);
+        }
+      }
+
+    } else {
+      callback(new Error("Not connected"));
+    }
+  }
+
+  self.isEnabled = function() {
+    return hw.wifi_is_enabled();
   }
 
   self.disable = function() {
