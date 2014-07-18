@@ -21,15 +21,12 @@ function Wifi(){
     //   , timeout: defaults to 60s
     // }
 
-    var connectionTimeout;
-
-    options.security = (options.security && options.security.toLowerCase()) || "wpa2";
-
-    options.timeout = options.timeout || 60;
-
     if (!options || !options.ssid) {
       throw Error("No SSID given");
     }
+
+    options.security = (options.security && options.security.toLowerCase()) || "wpa2";
+    options.timeout = options.timeout || 60;
 
     if (!options.password && options.security != "unsecured") {
       throw Error("No password given for a network with security type", options.security);
@@ -37,6 +34,7 @@ function Wifi(){
 
     // initiate connection
     var ret = hw.wifi_connect(options.ssid, options.password, options.security);
+    var connectionTimeout;
 
     if (ret != 0) {
       process.removeListener('wifi_connect_complete', callback);
@@ -53,7 +51,11 @@ function Wifi(){
       process.once('wifi_connect_complete', function(err, data){
         clearTimeout(connectionTimeout);
         if (!err) {
-          callback(err, JSON.parse(data));
+          try {
+            callback(err, JSON.parse(data));
+          } catch (e) {
+            callback(e);
+          }
         } else {
           callback(err, data);
         }
@@ -63,7 +65,11 @@ function Wifi(){
     process.on('wifi_connect_complete', function(err, data){
       clearTimeout(connectionTimeout);
       if (!err) {
-        self.emit('connect', err, JSON.parse(data))
+        try {
+          self.emit('connect', err, JSON.parse(data));
+        } catch (e) {
+          self.emit('connect', e);
+        }
       } else {
         self.emit('disconnect', err, data)
       }
@@ -88,10 +94,11 @@ function Wifi(){
     return null;
   }
 
-  self.reset = function() {
+  self.reset = function(callback) {
     // disable and then enable
     self.disable();
     self.enable();
+    callback && callback();
     return self;
   }
 
@@ -126,13 +133,15 @@ function Wifi(){
     return hw.wifi_is_enabled() == 1 ? true : false;
   }
 
-  self.disable = function() {
+  self.disable = function(callback) {
     hw.wifi_disable();
+    callback && callback();
     return self;
   }
 
-  self.enable = function() {
+  self.enable = function(callback) {
     hw.wifi_enable();
+    callback && callback();
     return self;
   }
 }
