@@ -1,7 +1,7 @@
 {
   "name": "wifi-cc3000",
-  "version": "0.0.0",
-  "description": "cc3000 driver for Tessel",
+  "version": "0.0.1",
+  "description": "Deprecated cc3000 driver for Tessel",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

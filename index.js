@@ -1,0 +1,1 @@
+throw new Error("The wifi-cc3000 package is deprecated. It is now bundled with Tessel's builtin firmware. require('wifi-cc3000') works without npm installing the package.");
